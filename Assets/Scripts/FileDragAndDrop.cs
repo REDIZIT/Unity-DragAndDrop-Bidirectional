@@ -9,9 +9,9 @@ public class FileDragAndDrop : MonoBehaviour
     {
         // must be installed on the main thread to get the right thread id.
         UnityDragAndDropHook.InstallHook();
-        UnityDragAndDropHook.OnDroppedFiles += OnFiles;
+        // UnityDragAndDropHook.OnDroppedFiles += OnFiles;
 
-        Application.targetFrameRate = 30;
+        Application.targetFrameRate = 60;
     }
     void OnDisable()
     {
@@ -24,7 +24,7 @@ public class FileDragAndDrop : MonoBehaviour
         {
             List<string> files = new()
             {
-                "D:/Projects/UniFiles/Assets/Scripts/123.txt"
+                "D:/Test/123.txt"
             };
             Debug.Log("Invoke drag and drop");
 
@@ -34,15 +34,15 @@ public class FileDragAndDrop : MonoBehaviour
         }
     }
 
-    void OnFiles(List<string> aFiles, POINT aPos)
-    {
-        // do something with the dropped file names. aPos will contain the
-        // mouse position within the window where the files has been dropped.
-        string str = "Dropped " + aFiles.Count + " files at: " + aPos + "/n/t" +
-                     aFiles.Aggregate((a, b) => a + "/n/t" + b);
-        Debug.Log(str);
-        log.Add(str);
-    }
+    // void OnFiles(List<string> aFiles, POINT aPos)
+    // {
+    //     // do something with the dropped file names. aPos will contain the
+    //     // mouse position within the window where the files has been dropped.
+    //     string str = "Dropped " + aFiles.Count + " files at: " + aPos + "/n/t" +
+    //                  aFiles.Aggregate((a, b) => a + "/n/t" + b);
+    //     Debug.Log(str);
+    //     log.Add(str);
+    // }
 
     private void OnGUI()
     {

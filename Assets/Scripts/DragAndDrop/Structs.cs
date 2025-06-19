@@ -1,6 +1,4 @@
-﻿// WH_CALLWNDPROC
-
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 
 [StructLayout(LayoutKind.Sequential)]
@@ -58,11 +56,10 @@ public struct RECT
 }
 
 
-// Добавленные Structs для Drag & Drop
 [StructLayout(LayoutKind.Sequential)]
 public struct FORMATETC
 {
-    public short cfFormat;
+    public CFFORMAT cfFormat;
     public IntPtr ptd; // Pointer to DVTARGETDEVICE, often null for simple data
     public DVASPECT dwAspect;
     public TYMED tymed;
@@ -78,12 +75,11 @@ public struct STGMEDIUM
 }
 
 [StructLayout(LayoutKind.Sequential)]
-public struct STATDATA // НОВАЯ СТРУКТУРА
+public struct STATDATA
 {
     public FORMATETC formatetc;
     public ADVF advf;
-    [MarshalAs(UnmanagedType.Interface)] // Это IAdviseSink*
-    public IAdviseSink pAdvSink;
+    [MarshalAs(UnmanagedType.Interface)] public IAdviseSink pAdvSink; // IAdviseSink*
     public uint dwConnection;
 }
 

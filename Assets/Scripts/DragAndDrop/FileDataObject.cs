@@ -4,41 +4,25 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 
 [ComVisible(true)]
-[ClassInterface(ClassInterfaceType.None)] // ДОБАВЛЕНО: Отключает автоматический Class Interface
+[ClassInterface(ClassInterfaceType.None)]
 public class FileDataObject : IDataObject
 {
     private List<string> _filePaths;
-    private STGMEDIUM stg;
 
     public FileDataObject(List<string> filePaths)
     {
         _filePaths = filePaths;
-
-        stg = new();
-        stg.tymed = TYMED.TYMED_FILE;
     }
 
     public int GetData(ref FORMATETC pFormatEtc, out STGMEDIUM pStgMedium)
     {
-        // Debug.Log("GetData: " + pFormatEtc.cfFormat); // GetData: -16094
-        //
-        //
-        // // pFormatEtc.cfFormat = (short)WinAPI.RegisterClipboardFormat("someformat");
-        // pFormatEtc.cfFormat = 15;
-        // // pFormatEtc.dwAspect = DVASPECT.DVASPECT_CONTENT;
-        // pFormatEtc.dwAspect = DVASPECT.DVASPECT_CONTENT;
-        // pFormatEtc.tymed = TYMED.TYMED_HGLOBAL;
-        // // Debug.Log("- cfFormat: " + pFormatEtc.cfFormat);
-        //
-        //
-        //
-        // pStgMedium = stg;
-        // return HRESULT.S_OK;
+        // pStgMedium = default;
+        // return HRESULT.DV_E_FORMATETC;
+
+
         pStgMedium = new STGMEDIUM();
 
-        Debug.Log(pFormatEtc.cfFormat);
-
-        if (pFormatEtc.cfFormat == DragDropHelper.CF_HDROP_VALUE &&
+        if (pFormatEtc.cfFormat == CFFORMAT.CF_HDROP &&
             (pFormatEtc.tymed & TYMED.TYMED_HGLOBAL) != 0)
         {
             // Calculate total size needed for all paths including null terminators
@@ -96,7 +80,6 @@ public class FileDataObject : IDataObject
                 pStgMedium.hGlobal = hGlobal;
                 pStgMedium.pUnkForRelease = IntPtr.Zero; // System will free this memory via GlobalFree
 
-                Debug.LogError("4");
                 return HRESULT.S_OK;
             }
             finally
@@ -105,7 +88,7 @@ public class FileDataObject : IDataObject
             }
         }
 
-        Debug.LogError("3");
+        // Debug.LogError("3");
         return HRESULT.DV_E_FORMATETC;
     }
 
@@ -118,7 +101,7 @@ public class FileDataObject : IDataObject
     public int QueryGetData(ref FORMATETC pFormatEtc)
     {
         Debug.Log("QueryGetData: " + pFormatEtc.cfFormat);
-        if (pFormatEtc.cfFormat == DragDropHelper.CF_HDROP_VALUE &&
+        if (pFormatEtc.cfFormat == CFFORMAT.CF_HDROP &&
             (pFormatEtc.tymed & TYMED.TYMED_HGLOBAL) != 0)
         {
             return HRESULT.S_OK; // Формат поддерживается
@@ -146,7 +129,7 @@ public class FileDataObject : IDataObject
             {
                 new FORMATETC
                 {
-                    cfFormat = DragDropHelper.CF_HDROP_VALUE,
+                    cfFormat = CFFORMAT.CF_HDROP,
                     tymed = TYMED.TYMED_HGLOBAL,
                     dwAspect = DVASPECT.DVASPECT_CONTENT,
                     lindex = -1,

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 
 [ComVisible(true)]
-[ClassInterface(ClassInterfaceType.None)] // ДОБАВЛЕНО
+[ClassInterface(ClassInterfaceType.None)]
 public class EnumStatData : IEnumSTATDATA
 {
     public int Next(uint celt, STATDATA[] rgelt, out uint pceltFetched)

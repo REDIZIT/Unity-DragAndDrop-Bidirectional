@@ -2,11 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public class FilesDropEvent
+{
+    public List<string> pathes;
+    public Vector2Int screenPos;
+    public POINT windowPoint;
+}
+
+public class DropHoverEvent
+{
+    public Vector2Int screenPos;
+}
+
 public static class UnityDragAndDropHook
 {
-    public delegate void DroppedFilesEvent(List<string> aPathNames, POINT aDropPoint);
-
-    public static event DroppedFilesEvent OnDroppedFiles;
+    public static Action<FilesDropEvent> onFilesDropped;
+    public static Action<DropHoverEvent> onDropHover;
 
 
     private static uint threadId;
@@ -55,6 +66,8 @@ public static class UnityDragAndDropHook
     [AOT.MonoPInvokeCallback(typeof(HookProc))]
     private static IntPtr Callback(int code, IntPtr wParam, ref MSG lParam)
     {
+        // Debug.Log("Callback message: " + lParam.message);
+
         if (code == 0 && lParam.message == WM.DROPFILES)
         {
             POINT pos;
@@ -71,19 +84,24 @@ public static class UnityDragAndDropHook
                 sb.Length = 0;
             }
 
-            // ИЗМЕНЕНО: Вызываем DragFinish только если это не наш собственный Drag-Out
-            if (!s_IsDraggingOut)
-            {
-                WinAPI.DragFinish(lParam.wParam);
-                Debug.Log("Called DragFinish for external drop.");
-            }
-            else
-            {
-                Debug.Log("Skipping DragFinish for self-drop during active drag-out operation.");
-            }
+            // // ИЗМЕНЕНО: Вызываем DragFinish только если это не наш собственный Drag-Out
+            // if (!s_IsDraggingOut)
+            // {
+            //     WinAPI.DragFinish(lParam.wParam);
+            //     Debug.Log("Called DragFinish for external drop.");
+            // }
+            // else
+            // {
+            //     Debug.Log("Skipping DragFinish for self-drop during active drag-out operation.");
+            // }
 
-            if (OnDroppedFiles != null)
-                OnDroppedFiles(result, pos);
+            FilesDropEvent e = new()
+            {
+                pathes = result,
+                screenPos = new(pos.x, Screen.height - pos.y),
+                windowPoint = pos
+            };
+            onFilesDropped?.Invoke(e);
         }
 
         return WinAPI.CallNextHookEx(m_Hook, code, wParam, ref lParam);
