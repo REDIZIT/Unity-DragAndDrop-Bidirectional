@@ -5,6 +5,14 @@ This plugin allows you to make your Unity (but not only) player able to **BI-DIR
 
 Theoretically, this code can be adapted not only for Unity, but also for any C# application and even more, since WinAPI calls are used here, it can be rewritten in Rust. The only thing you must have - ability to P/Invoke.
 
+# Features
+- Receive drop outside the Unity application
+- Send drop outside from Unity application
+- Send drop and receive drop inside smae Untiy application (UI thread will be locked, but onFilesDrop event will be invoked)
+
+# Known Issues
+- Thread block when WinAPI.DoDragDrop (blocks UI). Invoking WinAPI.DoDragDrop from another thread causes OleInitialize error [0x80010106 'RPC_E_CHANGED_MODE'](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/705fb797-2175-4a90-b5a3-3918024b10b8)
+
 # Sources used
 - [UnityWindowsFileDrag-Drop](https://github.com/Bunny83/UnityWindowsFileDrag-Drop) - Unity only drop receive-part code
 - [How to Implement Drag and Drop Between Your Program and Explorer](https://www.codeproject.com/Articles/840/How-to-Implement-Drag-and-Drop-Between-Your-Progra) - Chapter 'Initiating a drag and drop' is pretty usefull for DoDragDrop
