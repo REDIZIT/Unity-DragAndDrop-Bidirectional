@@ -1,3 +1,5 @@
+https://github.com/user-attachments/assets/3f481c83-2691-4357-bd07-ed0146e4045c
+
 # Bidirectional Files Drag and Drop
 This plugin allows you to make your Unity (but not only) player able to **BI-DIRECTIONAL DRAG AND DROP**!<br/>
 - Invoke **DoDragDrop** and send files from your Unity built game/app into Windows (File explorer, browser, telegram and etc).</br>
