@@ -3,6 +3,14 @@ using System.Runtime.InteropServices;
 
 public static class WinAPI
 {
+    // Флаги состояния клавиш, используемые в grfKeyState
+    public const uint MK_LBUTTON = 0x0001;
+    public const uint MK_RBUTTON = 0x0002;
+    public const uint MK_SHIFT = 0x0004;
+    public const uint MK_CONTROL = 0x0008;
+    public const uint MK_MBUTTON = 0x0010;
+    public const uint MK_ALT = 0x0020; // Это не стандартный MK_* флаг, но часто используется
+
     [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
     public static extern IntPtr GetModuleHandle(string lpModuleName);
     [DllImport("kernel32.dll")]
@@ -57,4 +65,20 @@ public static class WinAPI
     public static extern int OleInitialize(IntPtr pvReserved);
     [DllImport("ole32.dll")]
     public static extern void OleUninitialize(); // Для корректного завершения, если OleInitialize был вызван
+
+    [DllImport("ole32.dll", ExactSpelling = true)]
+    public static extern int RegisterDragDrop(
+        [In] IntPtr hwnd,
+        [In, MarshalAs(UnmanagedType.Interface)] IDropTarget pDropTarget);
+
+    [DllImport("ole32.dll", ExactSpelling = true)]
+    public static extern int RevokeDragDrop(
+        [In] IntPtr hwnd);
+
+    // Добавьте эту функцию для корректного освобождения STGMEDIUM
+    [DllImport("ole32.dll")]
+    public static extern void ReleaseStgMedium(ref STGMEDIUM pStgMedium);
+
+    [DllImport("user32.dll")]
+    public static extern bool ScreenToClient(IntPtr hWnd, ref POINT lpPoint);
 }
