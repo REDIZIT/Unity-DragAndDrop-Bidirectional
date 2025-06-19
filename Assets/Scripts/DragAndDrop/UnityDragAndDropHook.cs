@@ -14,6 +14,14 @@ public class FilesDropEvent
 public class DropHoverEvent
 {
     public Vector2Int screenPos;
+    public POINT monitorPoint;
+}
+
+public enum DragSendResult
+{
+    Dropped,
+    Cancelled,
+    Error
 }
 
 
@@ -71,9 +79,6 @@ public static class UnityDragAndDropHook
             Debug.LogError("Main window handle not found. Cannot install drag and drop hook.");
             return;
         }
-
-        // Удаляем DragAcceptFiles, так как теперь используем IDropTarget
-        // WinAPI.DragAcceptFiles(mainWindow, true); // УДАЛЕНО
 
         // Регистрируем наш IDropTarget
         s_DropTarget = new DropTarget(mainWindow);
@@ -154,14 +159,19 @@ public static class UnityDragAndDropHook
 
 
 
-    public static void StartDragFiles(List<string> filePaths)
+    public static DragSendResult StartDragFiles(List<string> filePaths, out DROPEFFECT resultEffect)
     {
-        if (Application.isEditor) return;
+        resultEffect = DROPEFFECT.DROPEFFECT_NONE;
+        if (Application.isEditor)
+        {
+            Debug.LogError("Drag and Drop is avaiable only in Build, not in Editor");
+            return DragSendResult.Error;
+        }
 
         if (filePaths == null || filePaths.Count == 0)
         {
-            Debug.LogWarning("No files provided for drag operation.");
-            return;
+            Debug.LogError("No files provided for drag operation.");
+            return DragSendResult.Error;
         }
 
         bool oleInitializedByUs = false;
@@ -174,14 +184,14 @@ public static class UnityDragAndDropHook
         else
         {
             Debug.LogError($"OleInitialize failed in StartDragFiles with HRESULT: {hrOle}");
-            return;
+            return DragSendResult.Error;
         }
+
 
         // Создаем экземпляры объектов IDataObject и IDropSource
         IDataObject dataObject = new FileDataObject(filePaths);
         IDropSource dropSource = new FileDropSource();
 
-        DROPEFFECT resultEffect;
         s_IsDraggingOut = true;
         try
         {
@@ -193,21 +203,23 @@ public static class UnityDragAndDropHook
             if (hr == HRESULT.DRAGDROP_S_DROP)
             {
                 Debug.Log($"Drag operation completed with effect: {resultEffect}");
-                // Здесь можно добавить логику, если, например, это было перемещение (DROPEFFECT_MOVE),
-                // то удалить оригинальные файлы.
+                return DragSendResult.Dropped;
             }
             else if (hr == HRESULT.DRAGDROP_S_CANCEL)
             {
                 Debug.Log("Drag operation cancelled.");
+                return DragSendResult.Cancelled;
             }
             else
             {
                 Debug.LogError($"DoDragDrop failed with HRESULT: {hr}");
+                return DragSendResult.Error;
             }
         }
         catch (Exception ex)
         {
             Debug.LogError($"Exception during DoDragDrop: {ex.Message}");
+            return DragSendResult.Error;
         }
         finally
         {

@@ -50,7 +50,7 @@ public class DropTarget : IDropTarget
 
     public int DragOver(uint grfKeyState, POINT pt, ref DROPEFFECT pdwEffect)
     {
-        // Debug.Log($"DragOver: pt=({pt.x},{pt.y}), grfKeyState={grfKeyState}"); // Частое логирование, может быть шумным
+        Debug.Log($"DragOver: pt=({pt.x},{pt.y}), grfKeyState={grfKeyState}"); // Частое логирование, может быть шумным
 
         // Здесь можно изменить pdwEffect в зависимости от grfKeyState (например, Shift для Link)
         // В данном случае, просто сохраняем разрешенные эффекты из DragEnter
@@ -93,7 +93,8 @@ public class DropTarget : IDropTarget
 
         bool canHandle = UnityDragAndDropHook.CanHandleDropHover(new()
         {
-            screenPos = POINT.MonitorToUnityScreenSpace(hwnd, pt)
+            screenPos = POINT.MonitorToUnityScreenSpace(hwnd, pt),
+            monitorPoint = pt
         });
         return canHandle ? HRESULT.S_OK : HRESULT.S_FALSE;
     }
@@ -170,7 +171,7 @@ public class DropTarget : IDropTarget
                 FilesDropEvent e = new()
                 {
                     pathes = result,
-                    screenPos = new(pt.x, Screen.height - pt.y),
+                    screenPos = POINT.MonitorToUnityScreenSpace(hwnd, pt),
                     windowPoint = pt
                 };
                 UnityDragAndDropHook.onFilesDropped?.Invoke(e);

@@ -1,10 +1,11 @@
+using System;
 using TMPro;
 using UnityEngine;
 
 public class DropReceiver : MonoBehaviour
 {
-    [SerializeField] private GameObject dropActiveGroup;
-    [SerializeField] private TextMeshProUGUI text;
+    [SerializeField] private GameObject hoveredGroup;
+    [SerializeField] private TextMeshProUGUI droppedFileText;
 
     private RectTransform rect;
 
@@ -27,14 +28,23 @@ public class DropReceiver : MonoBehaviour
 
     private void OnDropped(FilesDropEvent e)
     {
-        bool isInside = RectTransformUtility.RectangleContainsScreenPoint(rect, e.screenPos);
-        dropActiveGroup.SetActive(isInside);
+        if (IsInside(e.screenPos))
+        {
+            droppedFileText.text = $"Dropped files ({e.pathes.Count}):\n{string.Join(",\n", e.pathes)}";
+        }
+        
+        hoveredGroup.SetActive(false);
     }
 
     private bool OnDropHover(DropHoverEvent e)
     {
-        bool isInside = RectTransformUtility.RectangleContainsScreenPoint(rect, e.screenPos);
-        Debug.Log(isInside + ", " + e.screenPos + ", input: " + Input.mousePosition + ", detla: " + (Input.mousePosition.To2D() - e.screenPos));
+        bool isInside = IsInside(e.screenPos);
+        hoveredGroup.SetActive(isInside);
         return isInside;
+    }
+
+    private bool IsInside(Vector2Int screenPos)
+    {
+        return RectTransformUtility.RectangleContainsScreenPoint(rect, screenPos);
     }
 }
