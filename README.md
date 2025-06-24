@@ -14,6 +14,7 @@ Theoretically, this code can be adapted not only for Unity, but also for any C# 
 
 # Known Issues
 - Thread block when WinAPI.DoDragDrop (blocks UI). Invoking WinAPI.DoDragDrop from another thread causes OleInitialize error [0x80010106 'RPC_E_CHANGED_MODE'](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/705fb797-2175-4a90-b5a3-3918024b10b8)
+- Unity Build Crash with ERROR: SymGetSymFromAddr64, GetLastError: 'Attempt to access invalid address.' (Address: 00007FF614D811F2). **Fix:** Player Settings -> Other Settings -> Managed Stripping Level set to 'Disabled'
 
 # Sources used
 - [UnityWindowsFileDrag-Drop](https://github.com/Bunny83/UnityWindowsFileDrag-Drop) - Unity only drop receive-part code
