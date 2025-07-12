@@ -12,7 +12,7 @@ namespace REDIZIT.DragAndDrop
         [PreserveSig]
         void OnViewChange([In] uint dwAspect, [In] int lindex);
         [PreserveSig]
-        void OnRename([In, MarshalAs(UnmanagedType.IUnknown)] object pmk); // IMoniker - ИСПРАВЛЕНО
+        void OnRename([In, MarshalAs(UnmanagedType.IUnknown)] object pmk);
         [PreserveSig]
         void OnSave();
         [PreserveSig]

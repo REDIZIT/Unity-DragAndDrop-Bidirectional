@@ -5,13 +5,18 @@ namespace REDIZIT.DragAndDrop
 {
     public static class WinAPI
     {
-        // Флаги состояния клавиш, используемые в grfKeyState
+        // Key state flags used in grfKeyState
         public const uint MK_LBUTTON = 0x0001;
         public const uint MK_RBUTTON = 0x0002;
         public const uint MK_SHIFT = 0x0004;
         public const uint MK_CONTROL = 0x0008;
         public const uint MK_MBUTTON = 0x0010;
-        public const uint MK_ALT = 0x0020; // Это не стандартный MK_* флаг, но часто используется
+        public const uint MK_ALT = 0x0020; // This is not a standard MK_* flag, but is often used
+
+        // Flags for GlobalAlloc
+        public const uint GMEM_MOVEABLE = 0x0002;
+        public const uint GMEM_ZEROINIT = 0x0040;
+
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
@@ -65,16 +70,14 @@ namespace REDIZIT.DragAndDrop
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr GlobalFree(IntPtr hMem);
 
-        // Флаги для GlobalAlloc
-        public const uint GMEM_MOVEABLE = 0x0002;
-        public const uint GMEM_ZEROINIT = 0x0040;
 
-        // Инициализация COM (часто не требуется, т.к. Unity это делает, но хорошая практика)
+
+        // Initialize COM (often not needed since Unity does it, but good practice)
         [DllImport("ole32.dll")]
         public static extern int OleInitialize(IntPtr pvReserved);
 
         [DllImport("ole32.dll")]
-        public static extern void OleUninitialize(); // Для корректного завершения, если OleInitialize был вызван
+        public static extern void OleUninitialize(); // To terminate gracefully if OleInitialize was called
 
         [DllImport("ole32.dll", ExactSpelling = true)]
         public static extern int RegisterDragDrop(
@@ -86,7 +89,7 @@ namespace REDIZIT.DragAndDrop
         public static extern int RevokeDragDrop(
             [In] IntPtr hwnd);
 
-        // Добавьте эту функцию для корректного освобождения STGMEDIUM
+        // Add this function to properly release STGMEDIUM
         [DllImport("ole32.dll")]
         public static extern void ReleaseStgMedium(ref STGMEDIUM pStgMedium);
 

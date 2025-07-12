@@ -23,7 +23,9 @@ namespace REDIZIT.DragAndDrop
 
             currentDataObject = pDataObj;
 
-            // Проверяем, поддерживается ли формат CF_HDROP
+            //
+            // Check supports or not format CF_HDROP
+            //
             FORMATETC formatEtc = new FORMATETC
             {
                 cfFormat = CFFORMAT.CF_HDROP,
@@ -35,12 +37,10 @@ namespace REDIZIT.DragAndDrop
 
             if (pDataObj.QueryGetData(ref formatEtc) == HRESULT.S_OK)
             {
-                // Если формат поддерживается, устанавливаем разрешенные эффекты (например, копирование)
-                pdwEffect = DROPEFFECT.DROPEFFECT_COPY | DROPEFFECT.DROPEFFECT_MOVE; // Разрешаем копирование или перемещение
+                pdwEffect = DROPEFFECT.DROPEFFECT_COPY | DROPEFFECT.DROPEFFECT_MOVE;
             }
             else
             {
-                // Если формат не поддерживается, запрещаем дроп
                 pdwEffect = DROPEFFECT.DROPEFFECT_NONE;
             }
 
@@ -54,8 +54,6 @@ namespace REDIZIT.DragAndDrop
         {
             Debug.Log($"DragOver: pt=({pt.x},{pt.y}), grfKeyState={grfKeyState}"); // Частое логирование, может быть шумным
 
-            // Здесь можно изменить pdwEffect в зависимости от grfKeyState (например, Shift для Link)
-            // В данном случае, просто сохраняем разрешенные эффекты из DragEnter
             FORMATETC formatEtc = new FORMATETC
             {
                 cfFormat = CFFORMAT.CF_HDROP,
@@ -67,35 +65,16 @@ namespace REDIZIT.DragAndDrop
 
             if (currentDataObject != null && currentDataObject.QueryGetData(ref formatEtc) == HRESULT.S_OK)
             {
-                // Проверяем состояние клавиш, чтобы дать обратную связь пользователю
-                bool isShiftPressed = (grfKeyState & (uint)WinAPI.MK_SHIFT) != 0;
-                bool isCtrlPressed = (grfKeyState & (uint)WinAPI.MK_CONTROL) != 0;
-
-                if (isCtrlPressed && !isShiftPressed) // Ctrl для копирования
-                {
-                    pdwEffect = DROPEFFECT.DROPEFFECT_COPY;
-                }
-                else if (isShiftPressed && !isCtrlPressed) // Shift для перемещения (или Link, если актуально)
-                {
-                    pdwEffect = DROPEFFECT.DROPEFFECT_MOVE; // или DROPEFFECT.DROPEFFECT_LINK
-                }
-                else if (isCtrlPressed && isShiftPressed) // Ctrl+Shift для Link
-                {
-                    pdwEffect = DROPEFFECT.DROPEFFECT_LINK;
-                }
-                else // По умолчанию копирование
-                {
-                    pdwEffect = DROPEFFECT.DROPEFFECT_COPY;
-                }
+                pdwEffect = DROPEFFECT.DROPEFFECT_COPY;
             }
             else
             {
                 pdwEffect = DROPEFFECT.DROPEFFECT_NONE;
             }
 
-            bool canHandle = UnityDragAndDropHook.CanHandleDropHover(new()
+            bool canHandle = EditorDragAndDropHook.CanHandleDropHover(new()
             {
-                screenPos = POINT.MonitorToUnityScreenSpace(hwnd, pt),
+                screenPos = POINT.MonitorToGameScreenSpace(hwnd, pt),
                 monitorPoint = pt
             });
             return canHandle ? HRESULT.S_OK : HRESULT.S_FALSE;
@@ -104,8 +83,7 @@ namespace REDIZIT.DragAndDrop
         public int DragLeave()
         {
             Debug.Log("DragLeave");
-            currentDataObject = null; // Очищаем ссылку
-            // Здесь можно вызвать событие, если нужно оповестить о выходе курсора
+            currentDataObject = null;
             return HRESULT.S_OK;
         }
 
@@ -113,28 +91,9 @@ namespace REDIZIT.DragAndDrop
         {
             Debug.Log($"Drop: pt=({pt.x},{pt.y}), grfKeyState={grfKeyState}, pdwEffect={pdwEffect}");
 
-            currentDataObject = null; // Очищаем ссылку после дропа
+            currentDataObject = null;
 
-            // Определяем желаемый эффект дропа
-            bool isShiftPressed = (grfKeyState & (uint)WinAPI.MK_SHIFT) != 0;
-            bool isCtrlPressed = (grfKeyState & (uint)WinAPI.MK_CONTROL) != 0;
-
-            if (isCtrlPressed && !isShiftPressed)
-            {
-                pdwEffect = DROPEFFECT.DROPEFFECT_COPY;
-            }
-            else if (isShiftPressed && !isCtrlPressed)
-            {
-                pdwEffect = DROPEFFECT.DROPEFFECT_MOVE;
-            }
-            else if (isCtrlPressed && isShiftPressed)
-            {
-                pdwEffect = DROPEFFECT.DROPEFFECT_LINK;
-            }
-            else
-            {
-                pdwEffect = DROPEFFECT.DROPEFFECT_COPY; // По умолчанию копирование
-            }
+            pdwEffect = DROPEFFECT.DROPEFFECT_COPY;
 
             FORMATETC formatEtc = new FORMATETC
             {
@@ -165,18 +124,18 @@ namespace REDIZIT.DragAndDrop
                         sb.Length = 0;
                     }
 
-                    // ВАЖНО: WinAPI.ReleaseStgMedium освобождает память, если pUnkForRelease не null.
-                    // В нашем случае pUnkForRelease == IntPtr.Zero, так что GlobalFree будет вызван.
+                    // IMPORTANT: WinAPI.ReleaseStgMedium will release memory, if pUnkForRelease is not null.
+                    // In this case, pUnkForRelease == IntPtr.Zero, so GlobalFree will be invoked.
                     WinAPI.ReleaseStgMedium(ref stgMedium);
 
 
                     FilesDropEvent e = new()
                     {
                         pathes = result,
-                        screenPos = POINT.MonitorToUnityScreenSpace(hwnd, pt),
+                        screenPos = POINT.MonitorToGameScreenSpace(hwnd, pt),
                         windowPoint = pt
                     };
-                    UnityDragAndDropHook.onFilesDropped?.Invoke(e);
+                    EditorDragAndDropHook.onFilesDropped?.Invoke(e);
 
                     return HRESULT.S_OK;
                 }
@@ -186,9 +145,8 @@ namespace REDIZIT.DragAndDrop
                 Debug.LogError($"IDataObject.GetData failed with HRESULT: {hr}");
             }
 
-            // Если что-то пошло не так, устанавливаем эффект NONE
             pdwEffect = DROPEFFECT.DROPEFFECT_NONE;
-            return HRESULT.DV_E_FORMATETC; // Или другой соответствующий HRESULT
+            return HRESULT.DV_E_FORMATETC;
         }
     }
 }

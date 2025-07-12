@@ -20,21 +20,21 @@ namespace REDIZIT.DragAndDrop
         }
 
         /// <summary>
-        /// Windows' Window coordinates (zero at the top-left corner) to Unity's Window coordinates (zero at bottom-left corner)
+        /// Windows' Window coordinates (zero at the top-left corner) to Game's Window coordinates (zero at bottom-left corner)
         /// </summary>
-        public static Vector2Int WindowToUnityScreenSpace(POINT point)
+        public static Vector2Int WindowToGameScreenSpace(POINT point)
         {
             return new Vector2Int(point.x, Screen.height - point.y);
         }
 
         /// <summary>
-        /// Windows' monitor coordinates (zero at top-left corner of the monitor) to Unity's Window coordinates (zero at bottom-left conrner of the window)
+        /// Windows' monitor coordinates (zero at top-left corner of the monitor) to Game's Window coordinates (zero at bottom-left conrner of the window)
         /// </summary>
-        public static Vector2Int MonitorToUnityScreenSpace(IntPtr hwnd, POINT monitorPoint)
+        public static Vector2Int MonitorToGameScreenSpace(IntPtr hwnd, POINT monitorPoint)
         {
             if (hwnd == IntPtr.Zero)
             {
-                Debug.LogError("MonitorToUnityWindowSpace: Window handle is null.");
+                Debug.LogError($"{nameof(MonitorToGameScreenSpace)}: Window handle is null.");
                 return default;
             }
 
@@ -42,7 +42,7 @@ namespace REDIZIT.DragAndDrop
 
             if (!WinAPI.ScreenToClient(hwnd, ref clientPoint))
             {
-                Debug.LogError($"MonitorToUnityWindowSpace: Failed to convert screen to client coordinates. Error: {Marshal.GetLastWin32Error()}");
+                Debug.LogError($"{nameof(MonitorToGameScreenSpace)}: Failed to convert screen to client coordinates. Error: {Marshal.GetLastWin32Error()}");
                 return default;
             }
 

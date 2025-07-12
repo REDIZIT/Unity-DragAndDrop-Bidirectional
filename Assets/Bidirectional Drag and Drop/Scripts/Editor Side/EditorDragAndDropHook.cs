@@ -9,7 +9,7 @@ namespace REDIZIT.DragAndDrop
     public delegate IntPtr HookProc(int code, IntPtr wParam, ref MSG lParam);
     public delegate bool EnumThreadDelegate(IntPtr Hwnd, IntPtr lParam);
 
-    public static class UnityDragAndDropHook
+    public static class EditorDragAndDropHook
     {
         public static Action<FilesDropEvent> onFilesDropped;
 
@@ -19,10 +19,10 @@ namespace REDIZIT.DragAndDrop
         private static IntPtr mainWindow = IntPtr.Zero;
         private static IntPtr m_Hook;
         private static string m_ClassName = "UnityWndClass";
-        private static bool s_IsDraggingOut = false;
+        private static bool s_IsDraggingOut;
 
-        private static DropTarget s_DropTarget; // Новое поле для IDropTarget
-        private static bool s_OleInitializedByHook = false; // Флаг для отслеживания инициализации OLE
+        private static DropTarget s_DropTarget;
+        private static bool s_OleInitializedByHook;
 
         // attribute required for IL2CPP, also has to be a static method
         [AOT.MonoPInvokeCallback(typeof(EnumThreadDelegate))]
@@ -40,7 +40,9 @@ namespace REDIZIT.DragAndDrop
         {
             if (Application.isEditor) return;
 
-            // Инициализация OLE/COM
+            //
+            // OLE/COM initialization
+            //
             int hrOle = WinAPI.OleInitialize(IntPtr.Zero);
             if (hrOle == HRESULT.S_OK || hrOle == HRESULT.S_FALSE)
             {
@@ -63,7 +65,9 @@ namespace REDIZIT.DragAndDrop
                 return;
             }
 
-            // Регистрируем наш IDropTarget
+            //
+            // IDropTarget registration
+            //
             s_DropTarget = new DropTarget(mainWindow);
             int hrRegister = WinAPI.RegisterDragDrop(mainWindow, s_DropTarget);
             if (hrRegister == HRESULT.S_OK)
@@ -76,10 +80,7 @@ namespace REDIZIT.DragAndDrop
                 s_DropTarget = null;
             }
 
-            // Hook WH_GETMESSAGE теперь менее критичен для Drag&Drop, но может быть полезен для других сообщений.
-            // Если единственная цель хука - DROPFILES, то он может быть убран.
-            // Оставим его пока для примера, но WM_DROPFILES обрабатываться не будет
-            // так как DragAcceptFiles убрали.
+
             var hModule = WinAPI.GetModuleHandle(null);
             m_Hook = WinAPI.SetWindowsHookEx(HookType.WH_GETMESSAGE, Callback, hModule, threadId);
             if (m_Hook == IntPtr.Zero)
@@ -112,8 +113,6 @@ namespace REDIZIT.DragAndDrop
                 s_DropTarget = null;
             }
 
-            // WinAPI.DragAcceptFiles(mainWindow, false); // УДАЛЕНО
-
             if (s_OleInitializedByHook)
             {
                 WinAPI.OleUninitialize();
@@ -125,15 +124,13 @@ namespace REDIZIT.DragAndDrop
         [AOT.MonoPInvokeCallback(typeof(HookProc))]
         private static IntPtr Callback(int code, IntPtr wParam, ref MSG lParam)
         {
-            // Debug.Log("Callback message: " + lParam.message);
-
-            // WM.DROPFILES больше не будет приходить, так как мы не используем DragAcceptFiles
-            // Если вы видите WM.DROPFILES, это может быть связано с тем, что DragAcceptFiles был вызван
-            // где-то еще или хук был установлен до его удаления.
+            // WM.DROPFILES will no longer come up since we don't use DragAcceptFiles
+            // If you see WM.DROPFILES, it may be because DragAcceptFiles was called
+            // somewhere else or the hook was installed before it was removed.
             if (code == 0 && lParam.message == WM.DROPFILES)
             {
                 Debug.LogWarning("WM_DROPFILES received, but IDropTarget is preferred. This should not happen if DragAcceptFiles is removed.");
-                WinAPI.DragFinish(lParam.wParam); // Все равно освобождаем ресурсы, если пришло
+                WinAPI.DragFinish(lParam.wParam); // We still free up resources if it comes
                 // Event will be handled by IDropTarget.Drop
             }
 
@@ -171,14 +168,12 @@ namespace REDIZIT.DragAndDrop
             }
 
 
-            // Создаем экземпляры объектов IDataObject и IDropSource
             IDataObject dataObject = new FileDataObject(filePaths);
             IDropSource dropSource = new FileDropSource();
 
             s_IsDraggingOut = true;
             try
             {
-                // Вызываем нативную функцию DoDragDrop
                 int hr = WinAPI.DoDragDrop(dataObject, dropSource,
                     DROPEFFECT.DROPEFFECT_COPY | DROPEFFECT.DROPEFFECT_MOVE | DROPEFFECT.DROPEFFECT_LINK,
                     out resultEffect);
@@ -213,8 +208,8 @@ namespace REDIZIT.DragAndDrop
                     Debug.Log("OLE Uninitialized by Drag.");
                 }
 
-                // Явно указываем сборщику мусора, что эти объекты используются
-                // до завершения метода, чтобы они не были собраны во время нативного вызова.
+                // Explicitly tell the garbage collector that these objects are used before the method returns,
+                // so that they are not collected during a native call.
                 GC.KeepAlive(dataObject);
                 GC.KeepAlive(dropSource);
             }

@@ -9,23 +9,23 @@ namespace REDIZIT.DragAndDrop
         public int Next(uint celt, STATDATA[] rgelt, out uint pceltFetched)
         {
             pceltFetched = 0;
-            // Возвращаем S_FALSE, чтобы указать, что нет данных для перечисления
+            // Return S_FALSE to indicate that there is no data to enumerate.
             return HRESULT.S_FALSE;
         }
 
         public int Skip(uint celt)
         {
-            return HRESULT.S_OK; // Успешно "пропущено" (т.к. ничего и не было)
+            return HRESULT.S_OK; // Successfully "skipped" (since nothing happened)
         }
 
         public int Reset()
         {
-            return HRESULT.S_OK; // Успешно "сброшено"
+            return HRESULT.S_OK; // Successfully "dropped"
         }
 
         public int Clone(out IEnumSTATDATA ppEnum)
         {
-            // Возвращаем новую заглушку-перечислитель
+            // Return a new stub enumerator
             ppEnum = new EnumStatData();
             return HRESULT.S_OK;
         }

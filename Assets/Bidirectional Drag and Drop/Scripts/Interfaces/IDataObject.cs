@@ -30,20 +30,20 @@ namespace REDIZIT.DragAndDrop
         int SetData(
             [In] ref FORMATETC pFormatEtc,
             [In] ref STGMEDIUM pStgMedium,
-            [In, MarshalAs(UnmanagedType.Bool)] bool fRelease); // ИСПРАВЛЕНО
+            [In, MarshalAs(UnmanagedType.Bool)] bool fRelease);
 
         [PreserveSig]
         int EnumFormatEtc(
             [In] DATADIR dwDirection,
             [Out, MarshalAs(UnmanagedType.Interface)]
-            out IEnumFORMATETC ppEnumFormatEtc); // ИСПРАВЛЕНО
+            out IEnumFORMATETC ppEnumFormatEtc);
 
         [PreserveSig]
         int DAdvise(
             [In] ref FORMATETC pFormatEtc,
             [In] ADVF grfAdvf,
             [In, MarshalAs(UnmanagedType.Interface)]
-            IAdviseSink pAdvSink, // ИСПРАВЛЕНО
+            IAdviseSink pAdvSink,
             [Out] out uint pdwConnection);
 
         [PreserveSig]
@@ -53,6 +53,6 @@ namespace REDIZIT.DragAndDrop
         [PreserveSig]
         int EnumDAdvise(
             [Out, MarshalAs(UnmanagedType.Interface)]
-            out IEnumSTATDATA ppEnumAdvise); // ИСПРАВЛЕНО
+            out IEnumSTATDATA ppEnumAdvise);
     }
 }

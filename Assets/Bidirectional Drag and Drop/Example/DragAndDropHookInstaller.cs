@@ -6,12 +6,12 @@ namespace REDIZIT.DragAndDrop
     {
         private void OnEnable()
         {
-            UnityDragAndDropHook.InstallHook();
+            EditorDragAndDropHook.InstallHook();
         }
 
         private void OnDisable()
         {
-            UnityDragAndDropHook.UninstallHook();
+            EditorDragAndDropHook.UninstallHook();
         }
     }
 }

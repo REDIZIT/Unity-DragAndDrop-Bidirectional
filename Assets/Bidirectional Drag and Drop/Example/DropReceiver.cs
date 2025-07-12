@@ -17,14 +17,14 @@ namespace REDIZIT.DragAndDrop
 
         private void OnEnable()
         {
-            UnityDragAndDropHook.onFilesDropped += OnDropped;
-            UnityDragAndDropHook.SubcribeOnDropHover(OnDropHover);
+            EditorDragAndDropHook.onFilesDropped += OnDropped;
+            EditorDragAndDropHook.SubcribeOnDropHover(OnDropHover);
         }
 
         private void OnDisable()
         {
-            UnityDragAndDropHook.onFilesDropped -= OnDropped;
-            UnityDragAndDropHook.UnsubscribeOnDropHover(OnDropHover);
+            EditorDragAndDropHook.onFilesDropped -= OnDropped;
+            EditorDragAndDropHook.UnsubscribeOnDropHover(OnDropHover);
         }
 
         private void OnDropped(FilesDropEvent e)

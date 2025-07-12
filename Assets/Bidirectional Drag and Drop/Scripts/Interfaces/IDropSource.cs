@@ -9,7 +9,7 @@ namespace REDIZIT.DragAndDrop
     {
         [PreserveSig]
         int QueryContinueDrag(
-            [In, MarshalAs(UnmanagedType.Bool)] bool fEscapePressed, // ИСПРАВЛЕНО (с int на bool, добавлен MarshalAs)
+            [In, MarshalAs(UnmanagedType.Bool)] bool fEscapePressed,
             [In] int grfKeyState);
 
         [PreserveSig]

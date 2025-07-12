@@ -18,27 +18,21 @@ namespace REDIZIT.DragAndDrop
 
         public int GetData(ref FORMATETC pFormatEtc, out STGMEDIUM pStgMedium)
         {
-            // pStgMedium = default;
-            // return HRESULT.DV_E_FORMATETC;
-
-
             pStgMedium = new STGMEDIUM();
 
-            if (pFormatEtc.cfFormat == CFFORMAT.CF_HDROP &&
-                (pFormatEtc.tymed & TYMED.TYMED_HGLOBAL) != 0)
+            if (pFormatEtc.cfFormat == CFFORMAT.CF_HDROP && (pFormatEtc.tymed & TYMED.TYMED_HGLOBAL) != 0)
             {
                 // Calculate total size needed for all paths including null terminators
                 // Each path needs a null terminator, plus one final null terminator for the list
                 int totalPathsByteSize = 0;
-                List<byte[]> pathByteArrays = new List<byte[]>(); // Сначала сохраним байтовые представления путей
+                List<byte[]> pathByteArrays = new List<byte[]>();
                 foreach (string path in _filePaths)
                 {
-                    // Получаем байты строки в кодировке Unicode (UTF-16)
                     byte[] pathBytes = System.Text.Encoding.Unicode.GetBytes(path);
                     pathByteArrays.Add(pathBytes);
-                    totalPathsByteSize += pathBytes.Length + 2; // +2 для Unicode нуль-терминатора (0x0000)
+                    totalPathsByteSize += pathBytes.Length + 2; // +2 for Unicode null-terminator (0x0000)
                 }
-                totalPathsByteSize += 2; // Для финального двойного нуль-терминатора (0x0000) для всего списка
+                totalPathsByteSize += 2; // For final null-terminator for whole list
 
                 int dropFilesHeaderSize = Marshal.SizeOf(typeof(DROPFILES));
                 uint totalAllocSize = (uint)(dropFilesHeaderSize + totalPathsByteSize);
@@ -47,7 +41,7 @@ namespace REDIZIT.DragAndDrop
                 IntPtr hGlobal = WinAPI.GlobalAlloc(WinAPI.GMEM_MOVEABLE | WinAPI.GMEM_ZEROINIT, (UIntPtr)totalAllocSize);
                 if (hGlobal == IntPtr.Zero)
                 {
-                    Debug.LogError("1");
+                    // Debug.LogError("1");
                     return HRESULT.E_OUTOFMEMORY;
                 }
 
@@ -55,7 +49,7 @@ namespace REDIZIT.DragAndDrop
                 if (pGlobal == IntPtr.Zero)
                 {
                     WinAPI.GlobalFree(hGlobal);
-                    Debug.LogError("2");
+                    // Debug.LogError("2");
                     return HRESULT.E_OUTOFMEMORY;
                 }
 
@@ -94,7 +88,6 @@ namespace REDIZIT.DragAndDrop
             return HRESULT.DV_E_FORMATETC;
         }
 
-        // Остальные методы IDataObject (большей частью заглушки)
         public int GetDataHere(ref FORMATETC pFormatEtc, ref STGMEDIUM pStgMedium)
         {
             Debug.Log("GetDataHere");
@@ -106,9 +99,9 @@ namespace REDIZIT.DragAndDrop
             if (pFormatEtc.cfFormat == CFFORMAT.CF_HDROP &&
                 (pFormatEtc.tymed & TYMED.TYMED_HGLOBAL) != 0)
             {
-                return HRESULT.S_OK; // Формат поддерживается
+                return HRESULT.S_OK; // Format is supported
             }
-            return HRESULT.S_FALSE; // Формат не поддерживается
+            return HRESULT.S_FALSE; // Not supported
         }
         public int GetCanonicalFormatEtc(ref FORMATETC pFormatEtcIn, out FORMATETC pFormatEtcOut)
         {

@@ -45,7 +45,7 @@ namespace REDIZIT.DragAndDrop
                         isDragTracking = false;
 
                         statusText.text = "Dragging...";
-                        DragSendResult result = UnityDragAndDropHook.StartDragFiles(new List<string>()
+                        DragSendResult result = EditorDragAndDropHook.StartDragFiles(new List<string>()
                         {
                             filePathField.text
                         }, out DROPEFFECT effect);
